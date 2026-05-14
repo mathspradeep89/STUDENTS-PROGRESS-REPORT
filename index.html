@@ -1,267 +1,787 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Student Internal Mark Portal</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:Arial, sans-serif;
-    }
+<title>Student Internal Mark Portal</title>
 
-    body{
-      background:linear-gradient(135deg,#0f172a,#1e293b);
-      min-height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      padding:20px;
-      color:white;
-    }
+<style>
 
-    .container{
-      width:100%;
-      max-width:900px;
-      background:white;
-      color:#111827;
-      border-radius:20px;
-      padding:30px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.3);
-    }
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
 
-    h1{
-      text-align:center;
-      margin-bottom:25px;
-      color:#0f172a;
-    }
+body{
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
 
-    .search-box{
-      display:flex;
-      gap:10px;
-      margin-bottom:30px;
-    }
+.container{
+    width:100%;
+    max-width:900px;
+    background:white;
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
 
-    input{
-      flex:1;
-      padding:14px;
-      border-radius:10px;
-      border:1px solid #cbd5e1;
-      font-size:16px;
-    }
+h1{
+    text-align:center;
+    margin-bottom:25px;
+    color:#0f172a;
+}
 
-    button{
-      padding:14px 25px;
-      border:none;
-      background:#2563eb;
-      color:white;
-      border-radius:10px;
-      cursor:pointer;
-      font-size:16px;
-      transition:0.3s;
-    }
+.search-box{
+    display:flex;
+    gap:10px;
+    margin-bottom:30px;
+}
 
-    button:hover{
-      background:#1d4ed8;
-    }
+input{
+    flex:1;
+    padding:14px;
+    border-radius:10px;
+    border:1px solid #cbd5e1;
+    font-size:16px;
+}
 
-    .card{
-      display:none;
-      grid-template-columns:250px 1fr;
-      gap:30px;
-      align-items:center;
-      background:#f8fafc;
-      padding:25px;
-      border-radius:20px;
-      box-shadow:0 5px 15px rgba(0,0,0,0.1);
-    }
+button{
+    padding:14px 25px;
+    border:none;
+    background:#2563eb;
+    color:white;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:16px;
+}
 
-    .photo-section{
-      text-align:center;
-    }
+button:hover{
+    background:#1d4ed8;
+}
 
-    .photo-section img{
-      width:220px;
-      height:220px;
-      object-fit:cover;
-      border-radius:15px;
-      border:5px solid #2563eb;
-    }
+.card{
+    display:none;
+    grid-template-columns:250px 1fr;
+    gap:30px;
+    align-items:center;
+    background:#f8fafc;
+    padding:25px;
+    border-radius:20px;
+}
 
-    .details h2{
-      margin-bottom:15px;
-      color:#1e293b;
-    }
+.photo-section{
+    text-align:center;
+}
 
-    .details p{
-      margin:10px 0;
-      font-size:18px;
-    }
+.photo-section img{
+    width:220px;
+    height:220px;
+    object-fit:cover;
+    border-radius:15px;
+    border:5px solid #2563eb;
+}
 
-    .mark{
-      font-weight:bold;
-      color:#2563eb;
-    }
+.details h2{
+    margin-bottom:15px;
+    color:#1e293b;
+}
 
-    .error{
-      text-align:center;
-      color:red;
-      margin-top:15px;
-      font-weight:bold;
-    }
+.details p{
+    margin:10px 0;
+    font-size:18px;
+}
 
-    @media(max-width:768px){
-      .card{
-        grid-template-columns:1fr;
-        text-align:center;
-      }
-    }
-  </style>
+.mark{
+    color:#2563eb;
+    font-weight:bold;
+}
+
+.error{
+    text-align:center;
+    color:red;
+    margin-top:15px;
+    font-weight:bold;
+}
+
+@media(max-width:768px){
+
+.card{
+    grid-template-columns:1fr;
+    text-align:center;
+}
+
+}
+
+</style>
 </head>
 
 <body>
 
 <div class="container">
 
-  <h1>Internal Mark Portal</h1>
+<h1>Internal Mark Portal</h1>
 
-  <div class="search-box">
+<div class="search-box">
     <input type="text" id="rollNo" placeholder="Enter Register Number">
     <button onclick="searchStudent()">Search</button>
-  </div>
+</div>
 
-  <div class="card" id="studentCard">
+<div class="card" id="studentCard">
 
     <div class="photo-section">
-      <img id="studentPhoto" src="" alt="Student Photo">
+        <img id="studentPhoto" src="" alt="Student Photo">
     </div>
 
     <div class="details">
-      <h2 id="studentName"></h2>
 
-      <p><strong>Register Number:</strong> <span id="studentReg"></span></p>
-      <p><strong>Department:</strong> IT</p>
+        <h2 id="studentName"></h2>
 
-      <p><strong>IA-I Total:</strong> <span class="mark" id="ia1"></span></p>
-      <p><strong>IA-II Total:</strong> <span class="mark" id="ia2"></span></p>
-      <p><strong>Total Mark:</strong> <span class="mark" id="total"></span></p>
-      <p><strong>Final CIA Mark:</strong> <span class="mark" id="cia"></span> / 40</p>
+        <p><strong>Register Number:</strong>
+        <span id="studentReg"></span></p>
+
+        <p><strong>Department:</strong> IT</p>
+
+        <p><strong>IA-I Total:</strong>
+        <span class="mark" id="ia1"></span></p>
+
+        <p><strong>IA-II Total:</strong>
+        <span class="mark" id="ia2"></span></p>
+
+        <p><strong>Total Mark:</strong>
+        <span class="mark" id="total"></span></p>
+
+        <p><strong>CIA Mark:</strong>
+        <span class="mark" id="cia"></span> / 40</p>
+
     </div>
 
-  </div>
+</div>
 
-  <div class="error" id="error"></div>
+<div class="error" id="error"></div>
 
 </div>
 
 <script>
 
-/*
-=====================================================
-PHOTO STORAGE IN LOCAL FOLDER
-=====================================================
-
-Create folder structure:
-
-project-folder/
-    index.html
-    photos/
-        711725UIT101.jpg
-        711725UIT102.jpg
-        711725UIT103.jpg
-        etc...
-
-Photo name MUST match Register Number
-*/
-
 const students = {
 
-  "711725UIT101": {
-    name: "AAKASH KUMAR P",
-    ia1: 87,
-    ia2: 73,
-    total: 160,
-    cia: 32,
-    photo: "711725UIT101.jpg"
-  },
+"711725UIT101":{
+name:"AAKASH KUMAR P",
+ia1:87,
+ia2:73,
+total:160,
+cia:32,
+photo:"711725UIT101.jpg"
+},
 
-  "711725UIT102": {
-    name: "AARTHY M J",
-    ia1: 65,
-    ia2: 67,
-    total: 132,
-    cia: 26
-  },
+"711725UIT102":{
+name:"AARTHY M J",
+ia1:65,
+ia2:67,
+total:132,
+cia:26,
+photo:"711725UIT102.jpg"
+},
 
-  "711725UIT103": {
-    name: "ABINAYA SREE M",
-    ia1: 85,
-    ia2: 85,
-    total: 170,
-    cia: 34
-  },
+"711725UIT103":{
+name:"ABINAYA SREE M",
+ia1:85,
+ia2:85,
+total:170,
+cia:34,
+photo:"711725UIT103.jpg"
+},
 
-  "711725UIT109": {
-    name: "ANUSIYA M",
-    ia1: 98,
-    ia2: 96,
-    total: 194,
-    cia: 39
-  },
+"711725UIT104":{
+name:"ABISHEK M",
+ia1:54,
+ia2:36,
+total:90,
+cia:18,
+photo:"711725UIT104.jpg"
+},
 
-  "711725UIT142": {
-    name: "KALAIVANI V",
-    ia1: 98,
-    ia2: 100,
-    total: 198,
-    cia: 40
-  },
+"711725UIT105":{
+name:"AISHWARYA B",
+ia1:77,
+ia2:82,
+total:159,
+cia:32,
+photo:"711725UIT105.jpg"
+},
 
-  "711725UIT151": {
-    name: "KOKILA M",
-    ia1: 87,
-    ia2: 83,
-    total: 170,
-    cia: 34
-  }
+"711725UIT106":{
+name:"AKSHA JAICEE S",
+ia1:87,
+ia2:95,
+total:182,
+cia:36,
+photo:"711725UIT106.jpg"
+},
+
+"711725UIT107":{
+name:"ANDREA PRINCE",
+ia1:83,
+ia2:91,
+total:174,
+cia:35,
+photo:"711725UIT107.jpg"
+},
+
+"711725UIT108":{
+name:"ANGELIN SWEETY P",
+ia1:85,
+ia2:85,
+total:170,
+cia:34,
+photo:"711725UIT108.jpg"
+},
+
+"711725UIT109":{
+name:"ANUSIYA M",
+ia1:98,
+ia2:96,
+total:194,
+cia:39,
+photo:"711725UIT109.jpg"
+},
+
+"711725UIT110":{
+name:"ARUNA S",
+ia1:90,
+ia2:67,
+total:157,
+cia:31,
+photo:"711725UIT110.jpg"
+},
+
+"711725UIT111":{
+name:"ASHWIN R",
+ia1:84,
+ia2:83,
+total:167,
+cia:33,
+photo:"711725UIT111.jpg"
+},
+
+"711725UIT112":{
+name:"BAKYA SUJITHA D",
+ia1:90,
+ia2:84,
+total:174,
+cia:35,
+photo:"711725UIT112.jpg"
+},
+
+"711725UIT113":{
+name:"BALA DHARSHINI A",
+ia1:96,
+ia2:88,
+total:184,
+cia:37,
+photo:"711725UIT113.jpg"
+},
+
+"711725UIT114":{
+name:"BAVANA SRI S",
+ia1:55,
+ia2:77,
+total:132,
+cia:26,
+photo:"711725UIT114.jpg"
+},
+
+"711725UIT115":{
+name:"BHAGYALAKSHMI S",
+ia1:94,
+ia2:92,
+total:186,
+cia:37,
+photo:"711725UIT115.jpg"
+},
+
+"711725UIT116":{
+name:"BHAVANA SRI T R",
+ia1:66,
+ia2:72,
+total:138,
+cia:28,
+photo:"711725UIT116.jpg"
+},
+
+"711725UIT117":{
+name:"BOOPASH G",
+ia1:73,
+ia2:70,
+total:143,
+cia:29,
+photo:"711725UIT117.jpg"
+},
+
+"711725UIT118":{
+name:"BOOVIKA R",
+ia1:96,
+ia2:90,
+total:186,
+cia:37,
+photo:"711725UIT118.jpg"
+},
+
+"711725UIT119":{
+name:"BOOVISH R",
+ia1:83,
+ia2:85,
+total:168,
+cia:34,
+photo:"711725UIT119.jpg"
+},
+
+"711725UIT120":{
+name:"CHRISTY S",
+ia1:81,
+ia2:88,
+total:169,
+cia:34,
+photo:"711725UIT120.jpg"
+},
+
+"711725UIT121":{
+name:"CIBI P",
+ia1:36,
+ia2:46,
+total:82,
+cia:16,
+photo:"711725UIT121.jpg"
+},
+
+"711725UIT122":{
+name:"DARSINI V",
+ia1:75,
+ia2:81,
+total:156,
+cia:31,
+photo:"711725UIT122.jpg"
+},
+
+"711725UIT123":{
+name:"DHARMA R",
+ia1:73,
+ia2:67,
+total:140,
+cia:28,
+photo:"711725UIT123.jpg"
+},
+
+"711725UIT124":{
+name:"DHARSHANA K",
+ia1:65,
+ia2:67,
+total:132,
+cia:26,
+photo:"711725UIT124.jpg"
+},
+
+"711725UIT125":{
+name:"DHARSHIKA S",
+ia1:71,
+ia2:67,
+total:138,
+cia:28,
+photo:"711725UIT125.jpg"
+},
+
+"711725UIT126":{
+name:"DHARSHINI C",
+ia1:95,
+ia2:87,
+total:182,
+cia:36,
+photo:"711725UIT126.jpg"
+},
+
+"711725UIT127":{
+name:"DHARSHINI RATHNAPRIYA SIVAKUMAR",
+ia1:95,
+ia2:92,
+total:187,
+cia:37,
+photo:"711725UIT127.jpg"
+},
+
+"711725UIT128":{
+name:"DHARSHINI T",
+ia1:97,
+ia2:94,
+total:191,
+cia:38,
+photo:"711725UIT128.jpg"
+},
+
+"711725UIT129":{
+name:"DHARSHNI S D",
+ia1:69,
+ia2:67,
+total:136,
+cia:27,
+photo:"711725UIT129.jpg"
+},
+
+"711725UIT130":{
+name:"DHILLIP KUMAR M",
+ia1:51,
+ia2:67,
+total:118,
+cia:24,
+photo:"711725UIT130.jpg"
+},
+
+"711725UIT131":{
+name:"DHIVYA K",
+ia1:77,
+ia2:69,
+total:146,
+cia:29,
+photo:"711725UIT131.jpg"
+},
+
+"711725UIT132":{
+name:"DHIVYESH S",
+ia1:74,
+ia2:69,
+total:143,
+cia:29,
+photo:"711725UIT132.jpg"
+},
+
+"711725UIT133":{
+name:"FEMINA M S",
+ia1:48,
+ia2:71,
+total:119,
+cia:24,
+photo:"711725UIT133.jpg"
+},
+
+"711725UIT134":{
+name:"GAYATHRI P",
+ia1:83,
+ia2:70,
+total:153,
+cia:31,
+photo:"711725UIT134.jpg"
+},
+
+"711725UIT135":{
+name:"HARANI S",
+ia1:78,
+ia2:75,
+total:153,
+cia:31,
+photo:"711725UIT135.jpg"
+},
+
+"711725UIT137":{
+name:"HARSHAVARDHAN S",
+ia1:0,
+ia2:0,
+total:0,
+cia:0,
+photo:"711725UIT137.jpg"
+},
+
+"711725UIT138":{
+name:"HRITHIK A",
+ia1:80,
+ia2:67,
+total:147,
+cia:29,
+photo:"711725UIT138.jpg"
+},
+
+"711725UIT139":{
+name:"INDHU K",
+ia1:81,
+ia2:67,
+total:148,
+cia:30,
+photo:"711725UIT139.jpg"
+},
+
+"711725UIT140":{
+name:"INDHUMATHI M",
+ia1:49,
+ia2:71,
+total:120,
+cia:24,
+photo:"711725UIT140.jpg"
+},
+
+"711725UIT141":{
+name:"JUMAANA J",
+ia1:89,
+ia2:87,
+total:176,
+cia:35,
+photo:"711725UIT141.jpg"
+},
+
+"711725UIT142":{
+name:"KALAIVANI V",
+ia1:98,
+ia2:100,
+total:198,
+cia:40,
+photo:"711725UIT142.jpg"
+},
+
+"711725UIT143":{
+name:"KALPANA R",
+ia1:85,
+ia2:81,
+total:166,
+cia:33,
+photo:"711725UIT143.jpg"
+},
+
+"711725UIT144":{
+name:"KANCHANA T S",
+ia1:87,
+ia2:75,
+total:162,
+cia:32,
+photo:"711725UIT144.jpg"
+},
+
+"711725UIT145":{
+name:"KANISHKA S",
+ia1:59,
+ia2:68,
+total:127,
+cia:25,
+photo:"711725UIT145.jpg"
+},
+
+"711725UIT146":{
+name:"KARTHIKEYAN P",
+ia1:57,
+ia2:56,
+total:113,
+cia:23,
+photo:"711725UIT146.jpg"
+},
+
+"711725UIT147":{
+name:"KAVIN KUMAR V",
+ia1:86,
+ia2:80,
+total:166,
+cia:33,
+photo:"711725UIT147.jpg"
+},
+
+"711725UIT148":{
+name:"KEERTHANA K",
+ia1:90,
+ia2:85,
+total:175,
+cia:35,
+photo:"711725UIT148.jpg"
+},
+
+"711725UIT149":{
+name:"KEERTHIGA V",
+ia1:89,
+ia2:89,
+total:178,
+cia:36,
+photo:"711725UIT149.jpg"
+},
+
+"711725UIT150":{
+name:"KEYASTIN K",
+ia1:71,
+ia2:69,
+total:140,
+cia:28,
+photo:"711725UIT150.jpg"
+},
+
+"711725UIT151":{
+name:"KOKILA M",
+ia1:87,
+ia2:83,
+total:170,
+cia:34,
+photo:"711725UIT151.jpg"
+},
+
+"711725UIT152":{
+name:"LALITHADITHYA M",
+ia1:73,
+ia2:73,
+total:146,
+cia:29,
+photo:"711725UIT152.jpg"
+},
+
+"711725UIT153":{
+name:"LATHIKA P",
+ia1:79,
+ia2:83,
+total:162,
+cia:32,
+photo:"711725UIT153.jpg"
+},
+
+"711725UIT154":{
+name:"LAVANYA S",
+ia1:93,
+ia2:91,
+total:184,
+cia:37,
+photo:"711725UIT154.jpg"
+},
+
+"711725UIT155":{
+name:"LOGITHANAGARATHINAM B R",
+ia1:44,
+ia2:67,
+total:111,
+cia:22,
+photo:"711725UIT155.jpg"
+},
+
+"711725UIT156":{
+name:"LOKESHWARAN B",
+ia1:94,
+ia2:80,
+total:174,
+cia:35,
+photo:"711725UIT156.jpg"
+},
+
+"711725UIT157":{
+name:"MADHUMITHA M",
+ia1:95,
+ia2:83,
+total:178,
+cia:36,
+photo:"711725UIT157.jpg"
+},
+
+"711725UIT158":{
+name:"MENAKA V",
+ia1:75,
+ia2:54,
+total:129,
+cia:26,
+photo:"711725UIT158.jpg"
+},
+
+"711725UIT159":{
+name:"MITRA S",
+ia1:84,
+ia2:80,
+total:164,
+cia:33,
+photo:"711725UIT159.jpg"
+},
+
+"711725UIT160":{
+name:"MOBISHA T",
+ia1:61,
+ia2:70,
+total:131,
+cia:26,
+photo:"711725UIT160.jpg"
+},
+
+"711725UIT161":{
+name:"MOHAMED MUBARISH M Y",
+ia1:69,
+ia2:69,
+total:138,
+cia:28,
+photo:"711725UIT161.jpg"
+},
+
+"711725UIT162":{
+name:"MOHAN PRASAD D",
+ia1:74,
+ia2:72,
+total:146,
+cia:29,
+photo:"711725UIT162.jpg"
+},
+
+"711725UIT163":{
+name:"MOHANAVEL N",
+ia1:50,
+ia2:67,
+total:117,
+cia:23,
+photo:"711725UIT163.jpg"
+}
 
 };
 
 function searchStudent(){
 
-  const roll = document.getElementById("rollNo").value.trim();
-  const student = students[roll];
+const roll = document
+.getElementById("rollNo")
+.value
+.trim()
+.toUpperCase();
 
-  const card = document.getElementById("studentCard");
-  const error = document.getElementById("error");
+const student = students[roll];
 
-  if(student){
+const card = document.getElementById("studentCard");
+const error = document.getElementById("error");
 
-    card.style.display = "grid";
-    error.innerHTML = "";
+if(student){
 
-    document.getElementById("studentName").innerHTML = student.name;
-    document.getElementById("studentReg").innerHTML = roll;
+card.style.display = "grid";
 
-    document.getElementById("ia1").innerHTML = student.ia1;
-    document.getElementById("ia2").innerHTML = student.ia2;
-    document.getElementById("total").innerHTML = student.total;
-    document.getElementById("cia").innerHTML = student.cia;
+error.innerHTML = "";
 
-    // Local Drive Photo
-    document.getElementById("studentPhoto").src =
-      "photos/" + roll + ".jpg";
+document.getElementById("studentName").innerHTML =
+student.name;
 
-  }
-  else{
+document.getElementById("studentReg").innerHTML =
+roll;
 
-    card.style.display = "none";
-    error.innerHTML = "Student Record Not Found";
+document.getElementById("ia1").innerHTML =
+student.ia1;
 
-  }
+document.getElementById("ia2").innerHTML =
+student.ia2;
+
+document.getElementById("total").innerHTML =
+student.total;
+
+document.getElementById("cia").innerHTML =
+student.cia;
+
+document.getElementById("studentPhoto").src =
+student.photo;
+
+}
+else{
+
+card.style.display = "none";
+
+error.innerHTML = "Student Record Not Found";
+
+}
+
 }
 
 </script>
