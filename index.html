@@ -1,394 +1,269 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>KGISL ERP | Internal Marks Portal (Student + Faculty)</title>
-  <!-- Tailwind CSS + Font Awesome + Chart.js + SheetJS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Internal Mark Portal</title>
+
   <style>
-    * { font-family: 'Inter', sans-serif; }
-    body { transition: background 0.2s, color 0.2s; }
-    .student-card { transition: all 0.25s ease; }
-    .student-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -12px rgba(0,0,0,0.15); }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
-    .dark ::-webkit-scrollbar-track { background: #1e293b; }
-    .dark ::-webkit-scrollbar-thumb { background: #60a5fa; }
-    @media print {
-      .no-print, .sidebar, .top-nav, .filter-section, .action-buttons, .chart-container, .print-hide, .excel-upload { display: none !important; }
-      .main-content { margin: 0 !important; padding: 0 !important; }
-      .student-card { break-inside: avoid; border: 1px solid #ccc; }
-      body { background: white; }
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial, sans-serif;
     }
-    @media (max-width: 768px) {
-      .sidebar-fixed { transform: translateX(-100%); transition: transform 0.2s ease; position: fixed; z-index: 50; }
-      .sidebar-open .sidebar-fixed { transform: translateX(0); }
+
+    body{
+      background:linear-gradient(135deg,#0f172a,#1e293b);
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:20px;
+      color:white;
+    }
+
+    .container{
+      width:100%;
+      max-width:900px;
+      background:white;
+      color:#111827;
+      border-radius:20px;
+      padding:30px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    h1{
+      text-align:center;
+      margin-bottom:25px;
+      color:#0f172a;
+    }
+
+    .search-box{
+      display:flex;
+      gap:10px;
+      margin-bottom:30px;
+    }
+
+    input{
+      flex:1;
+      padding:14px;
+      border-radius:10px;
+      border:1px solid #cbd5e1;
+      font-size:16px;
+    }
+
+    button{
+      padding:14px 25px;
+      border:none;
+      background:#2563eb;
+      color:white;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:16px;
+      transition:0.3s;
+    }
+
+    button:hover{
+      background:#1d4ed8;
+    }
+
+    .card{
+      display:none;
+      grid-template-columns:250px 1fr;
+      gap:30px;
+      align-items:center;
+      background:#f8fafc;
+      padding:25px;
+      border-radius:20px;
+      box-shadow:0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .photo-section{
+      text-align:center;
+    }
+
+    .photo-section img{
+      width:220px;
+      height:220px;
+      object-fit:cover;
+      border-radius:15px;
+      border:5px solid #2563eb;
+    }
+
+    .details h2{
+      margin-bottom:15px;
+      color:#1e293b;
+    }
+
+    .details p{
+      margin:10px 0;
+      font-size:18px;
+    }
+
+    .mark{
+      font-weight:bold;
+      color:#2563eb;
+    }
+
+    .error{
+      text-align:center;
+      color:red;
+      margin-top:15px;
+      font-weight:bold;
+    }
+
+    @media(max-width:768px){
+      .card{
+        grid-template-columns:1fr;
+        text-align:center;
+      }
     }
   </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
 
-<!-- LOGIN OVERLAY (Admin + Student) -->
-<div id="loginOverlay" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-8 transition-all">
-    <div class="text-center mb-6">
-      <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
-        <i class="fas fa-graduation-cap text-white text-3xl"></i>
-      </div>
-      <h2 class="text-2xl font-bold mt-4 text-gray-800 dark:text-white">KGISL ERP</h2>
-      <p class="text-gray-500 dark:text-gray-400 text-sm">Internal Marks Portal</p>
-    </div>
-    <div class="flex border-b mb-4">
-      <button id="adminTabBtn" class="flex-1 py-2 font-semibold text-blue-600 border-b-2 border-blue-600">Admin Login</button>
-      <button id="studentTabBtn" class="flex-1 py-2 font-semibold text-gray-500 dark:text-gray-400">Student Login</button>
-    </div>
-    <!-- Admin Login Form -->
-    <div id="adminLoginForm">
-      <div class="space-y-4">
-        <div><label class="block text-sm font-medium">Username</label><input type="text" id="adminUsername" class="w-full border rounded-lg p-2 dark:bg-gray-700" placeholder="admin"></div>
-        <div><label class="block text-sm font-medium">Password</label><input type="password" id="adminPassword" class="w-full border rounded-lg p-2 dark:bg-gray-700" placeholder="••••••"></div>
-        <button id="adminLoginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition">Login as Admin</button>
-        <p class="text-xs text-center text-gray-500">Demo: admin / admin123</p>
-      </div>
-    </div>
-    <!-- Student Login Form -->
-    <div id="studentLoginForm" class="hidden">
-      <div class="space-y-4">
-        <div><label class="block text-sm font-medium">Register Number</label><input type="text" id="studentRegNoLogin" class="w-full border rounded-lg p-2 dark:bg-gray-700" placeholder="e.g., 25UIT101"></div>
-        <div><label class="block text-sm font-medium">Password (Default: student123)</label><input type="password" id="studentPassword" class="w-full border rounded-lg p-2 dark:bg-gray-700" placeholder="••••••"></div>
-        <button id="studentLoginBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-lg transition">View My Marks</button>
-        <p class="text-xs text-center text-gray-500">Use Register Number + password: student123</p>
-      </div>
-    </div>
+<body>
+
+<div class="container">
+
+  <h1>Internal Mark Portal</h1>
+
+  <div class="search-box">
+    <input type="text" id="rollNo" placeholder="Enter Register Number">
+    <button onclick="searchStudent()">Search</button>
   </div>
-</div>
 
-<!-- MAIN APP (hidden until login) -->
-<div id="dashboardApp" class="hidden relative min-h-screen">
-  <!-- Sidebar (different for admin vs student) -->
-  <div class="fixed inset-0 bg-black/40 z-40 hidden sidebar-backdrop no-print" id="sidebarBackdrop"></div>
-  <aside class="sidebar-fixed w-72 bg-white dark:bg-gray-800 shadow-xl h-full fixed top-0 left-0 z-50 transition-all duration-300 flex flex-col no-print" id="mainSidebar">
-    <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
-      <div class="bg-blue-600 p-2 rounded-xl"><i class="fas fa-chalkboard-user text-white text-xl"></i></div>
-      <div><h1 class="font-bold text-lg">KGISL <span class="text-blue-600">ERP</span></h1><p class="text-xs text-gray-500 dark:text-gray-400" id="roleBadge">Admin Panel</p></div>
-    </div>
-    <nav class="flex-1 p-4 space-y-2" id="sidebarNav">
-      <!-- dynamic nav based on role -->
-    </nav>
-    <div class="p-4 border-t dark:border-gray-700">
-      <button id="logoutBtnSidebar" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-50 text-red-600 dark:text-red-400 transition">
-        <i class="fas fa-sign-out-alt w-5"></i><span>Logout</span>
-      </button>
-    </div>
-  </aside>
+  <div class="card" id="studentCard">
 
-  <!-- MAIN CONTENT AREA -->
-  <div class="ml-0 md:ml-72 transition-all duration-300">
-    <header class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-30 px-5 py-3 flex justify-between items-center no-print">
-      <div class="flex items-center gap-3">
-        <button id="mobileMenuBtn" class="md:hidden text-2xl"><i class="fas fa-bars"></i></button>
-        <h2 class="text-xl font-semibold" id="pageTitle">Dashboard</h2>
-      </div>
-      <div class="flex items-center gap-3">
-        <span class="text-sm hidden sm:inline-block bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full"><i class="fas fa-user-circle"></i> <span id="userNameDisplay">Admin</span></span>
-        <button id="printReportBtn" class="bg-blue-100 dark:bg-blue-900/40 p-2 rounded-full hover:bg-blue-200 transition"><i class="fas fa-print"></i></button>
-        <button id="exportExcelBtn" class="bg-green-100 dark:bg-green-900/40 p-2 rounded-full hover:bg-green-200 transition"><i class="fas fa-file-excel"></i></button>
-        <button id="darkModeToggle" class="bg-gray-100 dark:bg-gray-700 p-2 rounded-full"><i class="fas fa-moon"></i></button>
-      </div>
-    </header>
-    <main class="p-4 md:p-6" id="mainContent"></main>
-    <footer class="text-center text-xs text-gray-400 py-4 border-t dark:border-gray-800 no-print">Statistics & Numerical Methods | Internal Assessment Report - Even Semester 2026</footer>
+    <div class="photo-section">
+      <img id="studentPhoto" src="" alt="Student Photo">
+    </div>
+
+    <div class="details">
+      <h2 id="studentName"></h2>
+
+      <p><strong>Register Number:</strong> <span id="studentReg"></span></p>
+      <p><strong>Department:</strong> IT</p>
+
+      <p><strong>IA-I Total:</strong> <span class="mark" id="ia1"></span></p>
+      <p><strong>IA-II Total:</strong> <span class="mark" id="ia2"></span></p>
+      <p><strong>Total Mark:</strong> <span class="mark" id="total"></span></p>
+      <p><strong>Final CIA Mark:</strong> <span class="mark" id="cia"></span> / 40</p>
+    </div>
+
   </div>
+
+  <div class="error" id="error"></div>
+
 </div>
 
 <script>
-  // ---------- GLOBAL DATA ----------
-  let students = [];
-  let currentUser = { role: null, regNo: null }; // role: 'admin' or 'student'
-  let currentFilter = { search: "", department: "all" };
-  let performanceChart = null;
 
-  // Helper: final internal marks out of 40
-  function calcFinalMark(ia1, ia2) {
-    const avg = (Number(ia1) + Number(ia2)) / 2;
-    return Math.round((avg * 0.8) * 10) / 10;
+/*
+=====================================================
+PHOTO STORAGE IN LOCAL FOLDER
+=====================================================
+
+Create folder structure:
+
+project-folder/
+    index.html
+    photos/
+        711725UIT101.jpg
+        711725UIT102.jpg
+        711725UIT103.jpg
+        etc...
+
+Photo name MUST match Register Number
+*/
+
+const students = {
+
+  "711725UIT101": {
+    name: "AAKASH KUMAR P",
+    ia1: 87,
+    ia2: 73,
+    total: 160,
+    cia: 32
+  },
+
+  "711725UIT102": {
+    name: "AARTHY M J",
+    ia1: 65,
+    ia2: 67,
+    total: 132,
+    cia: 26
+  },
+
+  "711725UIT103": {
+    name: "ABINAYA SREE M",
+    ia1: 85,
+    ia2: 85,
+    total: 170,
+    cia: 34
+  },
+
+  "711725UIT109": {
+    name: "ANUSIYA M",
+    ia1: 98,
+    ia2: 96,
+    total: 194,
+    cia: 39
+  },
+
+  "711725UIT142": {
+    name: "KALAIVANI V",
+    ia1: 98,
+    ia2: 100,
+    total: 198,
+    cia: 40
+  },
+
+  "711725UIT151": {
+    name: "KOKILA M",
+    ia1: 87,
+    ia2: 83,
+    total: 170,
+    cia: 34
   }
 
-  // Load/Save LocalStorage
-  function loadSampleData() {
-    const stored = localStorage.getItem("kgisl_students");
-    if(stored) {
-      students = JSON.parse(stored);
-    } else {
-      students = [
-        { id: "1", name: "Aakash Kumar P", regNo: "25UIT101", department: "B.TECH IT", ia1: 49, ia2: 48, photoBase64: "" },
-        { id: "2", name: "Aarthy M J", regNo: "25UIT102", department: "B.TECH IT", ia1: 30, ia2: 35, photoBase64: "" },
-        { id: "3", name: "Abinaya Sree M", regNo: "25UIT103", department: "B.TECH IT", ia1: 47, ia2: 38, photoBase64: "" },
-        { id: "4", name: "Abishek M", regNo: "25UIT104", department: "B.TECH IT", ia1: 22, ia2: 32, photoBase64: "" },
-        { id: "5", name: "Aishwarya B", regNo: "25UIT105", department: "B.TECH IT", ia1: 40, ia2: 37, photoBase64: "" },
-        { id: "6", name: "Andrea Prince", regNo: "25UIT107", department: "B.TECH IT", ia1: 45, ia2: 38, photoBase64: "" },
-        { id: "7", name: "Bala Dharshini A", regNo: "25UIT113", department: "B.TECH IT", ia1: 56, ia2: 49, photoBase64: "" },
-        { id: "8", name: "Bhagyalakshmi S", regNo: "25UIT115", department: "B.TECH CSE", ia1: 54, ia2: 52, photoBase64: "" },
-        { id: "9", name: "Boovika R", regNo: "25UIT118", department: "B.TECH IT", ia1: 56, ia2: 50, photoBase64: "" },
-        { id: "10", name: "Christy S", regNo: "25UIT120", department: "B.TECH AIDS", ia1: 44, ia2: 37, photoBase64: "" },
-        { id: "11", name: "Dharun V", regNo: "25CS201", department: "B.TECH CSE", ia1: 38, ia2: 42, photoBase64: "" },
-        { id: "12", name: "Swetha R", regNo: "25AIDS045", department: "B.TECH AIDS", ia1: 28, ia2: 30, photoBase64: "" }
-      ];
-      saveToLocalStorage();
-    }
-  }
-  function saveToLocalStorage() { localStorage.setItem("kgisl_students", JSON.stringify(students)); }
+};
 
-  // Helper to get student by regNo
-  function getStudentByRegNo(regNo) { return students.find(s => s.regNo === regNo); }
-  function updateStudentPhoto(regNo, photoBase64) {
-    const idx = students.findIndex(s => s.regNo === regNo);
-    if(idx !== -1) { students[idx].photoBase64 = photoBase64; saveToLocalStorage(); return true; }
-    return false;
-  }
-  function updateStudentMarks(regNo, ia1, ia2) {
-    const idx = students.findIndex(s => s.regNo === regNo);
-    if(idx !== -1) { students[idx].ia1 = ia1; students[idx].ia2 = ia2; saveToLocalStorage(); return true; }
-    return false;
-  }
+function searchStudent(){
 
-  // ---------- ADMIN DASHBOARD RENDER ----------
-  function getHighlightClass(finalMark) {
-    if(finalMark >= 30) return "border-l-8 border-green-500 bg-green-50 dark:bg-green-900/20";
-    if(finalMark >= 20) return "border-l-8 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20";
-    return "border-l-8 border-red-500 bg-red-50 dark:bg-red-900/20";
+  const roll = document.getElementById("rollNo").value.trim();
+  const student = students[roll];
+
+  const card = document.getElementById("studentCard");
+  const error = document.getElementById("error");
+
+  if(student){
+
+    card.style.display = "grid";
+    error.innerHTML = "";
+
+    document.getElementById("studentName").innerHTML = student.name;
+    document.getElementById("studentReg").innerHTML = roll;
+
+    document.getElementById("ia1").innerHTML = student.ia1;
+    document.getElementById("ia2").innerHTML = student.ia2;
+    document.getElementById("total").innerHTML = student.total;
+    document.getElementById("cia").innerHTML = student.cia;
+
+    // Local Drive Photo
+    document.getElementById("studentPhoto").src =
+      "photos/" + roll + ".jpg";
+
   }
+  else{
 
-  function renderAdminStudentsGrid() {
-    let filtered = students.filter(s => {
-      const matchSearch = s.name.toLowerCase().includes(currentFilter.search.toLowerCase()) || s.regNo.toLowerCase().includes(currentFilter.search.toLowerCase());
-      const matchDept = currentFilter.department === "all" || s.department === currentFilter.department;
-      return matchSearch && matchDept;
-    });
-    const container = document.getElementById("studentsGridContainer");
-    if(!container) return;
-    if(filtered.length === 0) { container.innerHTML = `<div class="col-span-full text-center py-12">No students found</div>`; return; }
-    container.innerHTML = filtered.map(s => {
-      const finalM = calcFinalMark(s.ia1, s.ia2);
-      const photoHtml = s.photoBase64 ? `<img src="${s.photoBase64}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-200 to-blue-400 text-white text-2xl font-bold">${s.name.charAt(0)}</div>`;
-      return `
-        <div class="student-card rounded-2xl overflow-hidden shadow-md bg-white dark:bg-gray-800 ${getHighlightClass(finalM)}">
-          <div class="p-4 flex gap-4 items-center">
-            <div class="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden flex-shrink-0">${photoHtml}</div>
-            <div class="flex-1">
-              <h3 class="font-bold text-lg">${escapeHtml(s.name)}</h3>
-              <p class="text-sm text-gray-500"><i class="fas fa-id-card"></i> ${s.regNo} | ${s.department}</p>
-              <div class="flex flex-wrap gap-2 mt-1 text-xs">
-                <span class="bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">IA-I: ${s.ia1}/50</span>
-                <span class="bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">IA-II: ${s.ia2}/50</span>
-                <span class="font-semibold text-blue-700">Final: ${finalM}/40</span>
-              </div>
-            </div>
-            <div class="flex flex-col gap-1">
-              <button class="editStudentBtn text-blue-500 hover:text-blue-700" data-id="${s.id}"><i class="fas fa-edit"></i></button>
-              <button class="deleteStudentBtn text-red-500 hover:text-red-700" data-id="${s.id}"><i class="fas fa-trash-alt"></i></button>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join("");
-    document.querySelectorAll(".editStudentBtn").forEach(btn => btn.addEventListener("click", (e) => { e.stopPropagation(); openEditModal(btn.dataset.id); }));
-    document.querySelectorAll(".deleteStudentBtn").forEach(btn => btn.addEventListener("click", (e) => { e.stopPropagation(); if(confirm("Delete student?")) deleteStudentById(btn.dataset.id); }));
+    card.style.display = "none";
+    error.innerHTML = "Student Record Not Found";
+
   }
+}
 
-  function updateAdminAnalytics() {
-    let filtered = students.filter(s => {
-      const matchSearch = s.name.toLowerCase().includes(currentFilter.search.toLowerCase()) || s.regNo.toLowerCase().includes(currentFilter.search.toLowerCase());
-      const matchDept = currentFilter.department === "all" || s.department === currentFilter.department;
-      return matchSearch && matchDept;
-    });
-    const finalMarks = filtered.map(s => calcFinalMark(s.ia1, s.ia2));
-    const avgFinal = finalMarks.length ? (finalMarks.reduce((a,b)=>a+b,0)/finalMarks.length).toFixed(1) : 0;
-    const highest = finalMarks.length ? Math.max(...finalMarks) : 0;
-    const lowCount = finalMarks.filter(m => m < 20).length;
-    document.getElementById("summaryAvg").innerText = avgFinal;
-    document.getElementById("summaryHighest").innerText = highest;
-    document.getElementById("summaryLowCount").innerText = lowCount;
-    document.getElementById("studentCount").innerText = filtered.length;
-    if(performanceChart) performanceChart.destroy();
-    const ctx = document.getElementById("performanceChartCanvas")?.getContext("2d");
-    if(ctx) {
-      const bins = [0,10,20,30,40];
-      const freq = [0,0,0,0];
-      finalMarks.forEach(m => { if(m<10) freq[0]++; else if(m<20) freq[1]++; else if(m<30) freq[2]++; else freq[3]++; });
-      performanceChart = new Chart(ctx, { type: 'bar', data: { labels: ['0-9','10-19','20-29','30-40'], datasets: [{ label: 'Students', data: freq, backgroundColor: '#3b82f6', borderRadius: 8 }] } });
-    }
-  }
-
-  function renderAdminDashboard() {
-    const mainDiv = document.getElementById("mainContent");
-    mainDiv.innerHTML = `
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow"><p class="text-gray-500">Total Students</p><p class="text-3xl font-bold" id="studentCount">0</p></div>
-        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow"><p class="text-gray-500">Avg Final Marks</p><p class="text-3xl font-bold" id="summaryAvg">0</p></div>
-        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow"><p class="text-gray-500">Highest Score</p><p class="text-3xl font-bold text-green-600" id="summaryHighest">0</p></div>
-        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow"><p class="text-gray-500">Low Performers (<20)</p><p class="text-3xl font-bold text-red-500" id="summaryLowCount">0</p></div>
-      </div>
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow mb-6">
-        <div class="flex flex-wrap justify-between items-center mb-4"><h3 class="font-semibold text-lg">Student Records</h3><div class="flex gap-2"><button id="excelUploadBtn" class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm"><i class="fas fa-upload"></i> Upload Excel Marks</button><button id="addStudentBtn" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm"><i class="fas fa-plus"></i> Add Student</button></div></div>
-        <div class="flex flex-col md:flex-row gap-4 mb-4"><div class="relative w-full md:w-80"><i class="fas fa-search absolute left-3 top-3 text-gray-400"></i><input type="text" id="searchInput" placeholder="Search by name / reg no" class="pl-10 pr-4 py-2 w-full border rounded-xl dark:bg-gray-800"></div><select id="deptFilter" class="border rounded-xl px-4 py-2 dark:bg-gray-800"><option value="all">All Departments</option>${[...new Set(students.map(s=>s.department))].map(d=>`<option value="${d}">${d}</option>`).join('')}</select></div>
-        <div id="studentsGridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
-      </div>
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow"><h3 class="font-semibold text-lg mb-3">📊 Marks Distribution (Final out of 40)</h3><canvas id="performanceChartCanvas" height="200"></canvas></div>
-    `;
-    document.getElementById("searchInput")?.addEventListener("input", (e) => { currentFilter.search = e.target.value; renderAdminStudentsGrid(); updateAdminAnalytics(); });
-    document.getElementById("deptFilter")?.addEventListener("change", (e) => { currentFilter.department = e.target.value; renderAdminStudentsGrid(); updateAdminAnalytics(); });
-    document.getElementById("addStudentBtn")?.addEventListener("click", () => openAddModal());
-    document.getElementById("excelUploadBtn")?.addEventListener("click", () => { const input = document.createElement('input'); input.type='file'; input.accept='.xlsx, .xls, .csv'; input.onchange=e=>handleExcelUpload(e.target.files[0]); input.click(); });
-    renderAdminStudentsGrid();
-    updateAdminAnalytics();
-  }
-
-  // Excel Upload Handler (Admin only)
-  function handleExcelUpload(file) {
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet);
-      let updated = 0;
-      rows.forEach(row => {
-        const reg = row["Register Number"] || row["REG_NO"] || row["RegNo"] || "";
-        const ia1Val = row["IA-I"] ?? row["IA1"] ?? row["ia1"];
-        const ia2Val = row["IA-II"] ?? row["IA2"] ?? row["ia2"];
-        if(reg && ia1Val !== undefined && ia2Val !== undefined) {
-          const ia1 = Number(ia1Val);
-          const ia2 = Number(ia2Val);
-          if(!isNaN(ia1) && !isNaN(ia2)) {
-            if(updateStudentMarks(reg, ia1, ia2)) updated++;
-          }
-        }
-      });
-      alert(`Updated ${updated} student records from Excel.`);
-      renderAdminDashboard(); // refresh full view
-    };
-    reader.readAsArrayBuffer(file);
-  }
-
-  // Admin CRUD modals (same as before)
-  function openAddModal() { /* same as original but simplified */ showModal('add'); }
-  function openEditModal(id) { showModal('edit', id); }
-  function showModal(mode, id=null) {
-    const modalHtml = `
-      <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]" id="dynamicModal">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg mx-4 p-6">
-          <h3 class="text-xl font-bold mb-4">${mode==='add'?'Add Student':'Edit Student'}</h3>
-          <div class="space-y-3"><input id="modalName" placeholder="Full Name" class="w-full border p-2 rounded"><input id="modalRegNo" placeholder="Register Number" class="w-full border p-2 rounded"><select id="modalDept"><option>B.TECH IT</option><option>B.TECH CSE</option><option>B.TECH AIDS</option></select><input type="number" id="modalIa1" placeholder="IA-I (0-50)" class="w-full border p-2 rounded"><input type="number" id="modalIa2" placeholder="IA-II (0-50)" class="w-full border p-2 rounded"><input type="file" id="modalPhoto" accept="image/*"></div>
-          <div class="flex justify-end gap-2 mt-4"><button id="modalSaveBtn" class="bg-blue-600 text-white px-4 py-2 rounded">Save</button><button id="modalCloseBtn" class="border px-4 py-2 rounded">Cancel</button></div>
-        </div>
-      </div>`;
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-    if(mode === 'edit' && id) {
-      const s = students.find(s=>s.id==id);
-      if(s) { document.getElementById('modalName').value=s.name; document.getElementById('modalRegNo').value=s.regNo; document.getElementById('modalDept').value=s.department; document.getElementById('modalIa1').value=s.ia1; document.getElementById('modalIa2').value=s.ia2; }
-      document.getElementById('modalSaveBtn').onclick = () => { updateStudentById(id); };
-    } else {
-      document.getElementById('modalSaveBtn').onclick = () => { addNewStudent(); };
-    }
-    document.getElementById('modalCloseBtn').onclick = () => document.getElementById('dynamicModal').remove();
-  }
-  function addNewStudent() { /* implementation */ let name=document.getElementById('modalName').value, reg=document.getElementById('modalRegNo').value, dept=document.getElementById('modalDept').value, ia1=+document.getElementById('modalIa1').value, ia2=+document.getElementById('modalIa2').value; students.push({id:Date.now().toString(), name, regNo:reg, department:dept, ia1, ia2, photoBase64:""}); saveToLocalStorage(); document.getElementById('dynamicModal').remove(); renderAdminDashboard(); }
-  function updateStudentById(id) { let idx=students.findIndex(s=>s.id==id); if(idx!==-1){ students[idx].name=document.getElementById('modalName').value; students[idx].regNo=document.getElementById('modalRegNo').value; students[idx].department=document.getElementById('modalDept').value; students[idx].ia1=+document.getElementById('modalIa1').value; students[idx].ia2=+document.getElementById('modalIa2').value; saveToLocalStorage(); document.getElementById('dynamicModal').remove(); renderAdminDashboard(); } }
-  function deleteStudentById(id) { students = students.filter(s=>s.id!=id); saveToLocalStorage(); renderAdminDashboard(); }
-
-  // ---------- STUDENT DASHBOARD (view + photo upload) ----------
-  function renderStudentDashboard(regNo) {
-    const student = getStudentByRegNo(regNo);
-    if(!student) { document.getElementById("mainContent").innerHTML = '<div class="text-center p-10 text-red-500">Student not found. Contact admin.</div>'; return; }
-    const finalM = calcFinalMark(student.ia1, student.ia2);
-    const photoHtml = student.photoBase64 ? `<img src="${student.photoBase64}" class="w-32 h-32 rounded-full object-cover border-4 border-blue-500 shadow-lg">` : `<div class="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white text-4xl font-bold">${student.name.charAt(0)}</div>`;
-    const mainDiv = document.getElementById("mainContent");
-    mainDiv.innerHTML = `
-      <div class="max-w-2xl mx-auto mt-6 bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 text-center">
-        <div class="flex justify-center mb-4">${photoHtml}</div>
-        <h2 class="text-2xl font-bold">${escapeHtml(student.name)}</h2>
-        <p class="text-gray-500">${student.regNo} | ${student.department}</p>
-        <div class="mt-6 grid grid-cols-2 gap-4 text-left">
-          <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg"><span class="text-sm">IA-I (50)</span><div class="text-2xl font-bold">${student.ia1}</div></div>
-          <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg"><span class="text-sm">IA-II (50)</span><div class="text-2xl font-bold">${student.ia2}</div></div>
-        </div>
-        <div class="mt-4 p-4 rounded-xl ${finalM>=30?'bg-green-100 dark:bg-green-900/40':finalM>=20?'bg-yellow-100 dark:bg-yellow-900/40':'bg-red-100 dark:bg-red-900/40'}"><span class="font-bold">Final Internal Marks (out of 40):</span> <span class="text-3xl font-bold">${finalM}</span></div>
-        <div class="mt-6 border-t pt-4"><h3 class="font-semibold mb-2">Upload / Update Your Photo</h3><input type="file" id="studentPhotoUpload" accept="image/*" class="border p-2 rounded w-full"><button id="uploadPhotoBtn" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded-lg">Update Photo</button></div>
-      </div>
-    `;
-    document.getElementById("studentPhotoUpload").addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if(file) {
-        const reader = new FileReader();
-        reader.onload = ev => { updateStudentPhoto(student.regNo, ev.target.result); renderStudentDashboard(student.regNo); alert("Photo updated!"); };
-        reader.readAsDataURL(file);
-      }
-    });
-    document.getElementById("uploadPhotoBtn")?.addEventListener("click", () => document.getElementById("studentPhotoUpload").dispatchEvent(new Event('change')));
-  }
-
-  // ---------- SIDEBAR & INIT ----------
-  function initUIByRole() {
-    const sidebarNav = document.getElementById("sidebarNav");
-    const roleBadge = document.getElementById("roleBadge");
-    const userNameSpan = document.getElementById("userNameDisplay");
-    if(currentUser.role === 'admin') {
-      roleBadge.innerText = "Admin Panel";
-      userNameSpan.innerText = "Faculty Admin";
-      sidebarNav.innerHTML = `<a href="#" class="nav-link flex items-center gap-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-700" data-nav="dashboard"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>`;
-      document.querySelector("[data-nav='dashboard']")?.addEventListener("click", (e) => { e.preventDefault(); renderAdminDashboard(); document.getElementById("pageTitle").innerText = "Admin Dashboard"; });
-      renderAdminDashboard();
-      document.getElementById("pageTitle").innerText = "Admin Dashboard";
-    } else if(currentUser.role === 'student') {
-      roleBadge.innerText = "Student Portal";
-      userNameSpan.innerText = currentUser.regNo;
-      sidebarNav.innerHTML = `<a href="#" class="nav-link flex items-center gap-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/30" data-student-view><i class="fas fa-id-card"></i><span>My Marks</span></a>`;
-      document.querySelector("[data-student-view]")?.addEventListener("click", (e) => { e.preventDefault(); renderStudentDashboard(currentUser.regNo); document.getElementById("pageTitle").innerText = "My Internal Marks"; });
-      renderStudentDashboard(currentUser.regNo);
-      document.getElementById("pageTitle").innerText = "My Marks";
-    }
-    // attach print/export for admin only (hide for student)
-    const printBtn = document.getElementById("printReportBtn");
-    const exportBtn = document.getElementById("exportExcelBtn");
-    if(currentUser.role !== 'admin') { printBtn.style.display = 'none'; exportBtn.style.display = 'none'; } else { printBtn.style.display = 'inline-flex'; exportBtn.style.display = 'inline-flex'; }
-    if(currentUser.role === 'admin') {
-      window.printReport = () => window.print();
-      window.exportToCSV = () => {
-        let data = students.map(s => ({ Name:s.name, RegNo:s.regNo, Dept:s.department, IA1:s.ia1, IA2:s.ia2, Final:calcFinalMark(s.ia1,s.ia2) }));
-        let csv = "Name,RegNo,Department,IA-I,IA-II,Final\n"+data.map(d=>`${d.Name},${d.RegNo},${d.Dept},${d.IA1},${d.IA2},${d.Final}`).join("\n");
-        const blob = new Blob([csv], {type:"text/csv"}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "marks.csv"; a.click();
-      };
-      printBtn.onclick = () => window.print();
-      exportBtn.onclick = () => window.exportToCSV();
-    } else {
-      printBtn.onclick = null; exportBtn.onclick = null;
-    }
-  }
-
-  function logout() { localStorage.removeItem("loggedInUser"); currentUser = { role: null, regNo: null }; document.getElementById("dashboardApp").classList.add("hidden"); document.getElementById("loginOverlay").classList.remove("hidden"); }
-
-  // LOGIN HANDLERS
-  document.getElementById("adminTabBtn").onclick = () => { document.getElementById("adminLoginForm").classList.remove("hidden"); document.getElementById("studentLoginForm").classList.add("hidden"); document.getElementById("adminTabBtn").classList.add("text-blue-600","border-b-2","border-blue-600"); document.getElementById("studentTabBtn").classList.remove("text-blue-600","border-b-2","border-blue-600"); document.getElementById("studentTabBtn").classList.add("text-gray-500"); };
-  document.getElementById("studentTabBtn").onclick = () => { document.getElementById("studentLoginForm").classList.remove("hidden"); document.getElementById("adminLoginForm").classList.add("hidden"); document.getElementById("studentTabBtn").classList.add("text-blue-600","border-b-2","border-blue-600"); document.getElementById("adminTabBtn").classList.remove("text-blue-600","border-b-2","border-blue-600"); document.getElementById("adminTabBtn").classList.add("text-gray-500"); };
-  document.getElementById("adminLoginBtn").onclick = () => { const u=document.getElementById("adminUsername").value, p=document.getElementById("adminPassword").value; if(u==="admin" && p==="admin123") { currentUser = { role: "admin", regNo: null }; localStorage.setItem("loggedInUser", JSON.stringify(currentUser)); document.getElementById("loginOverlay").classList.add("hidden"); document.getElementById("dashboardApp").classList.remove("hidden"); initUIByRole(); } else alert("Invalid admin credentials"); };
-  document.getElementById("studentLoginBtn").onclick = () => { const reg=document.getElementById("studentRegNoLogin").value, pwd=document.getElementById("studentPassword").value; if(pwd === "student123" && getStudentByRegNo(reg)) { currentUser = { role: "student", regNo: reg }; localStorage.setItem("loggedInUser", JSON.stringify(currentUser)); document.getElementById("loginOverlay").classList.add("hidden"); document.getElementById("dashboardApp").classList.remove("hidden"); initUIByRole(); } else alert("Invalid Register Number or password (use student123)"); };
-  document.getElementById("logoutBtnSidebar").onclick = logout;
-  document.getElementById("darkModeToggle").onclick = () => { document.documentElement.classList.toggle("dark"); localStorage.setItem("darkMode", document.documentElement.classList.contains("dark")); };
-  if(localStorage.getItem("darkMode") === "true") document.documentElement.classList.add("dark");
-  const savedUser = localStorage.getItem("loggedInUser");
-  if(savedUser) { currentUser = JSON.parse(savedUser); if(currentUser.role === 'admin' || (currentUser.role === 'student' && getStudentByRegNo(currentUser.regNo))) { document.getElementById("loginOverlay").classList.add("hidden"); document.getElementById("dashboardApp").classList.remove("hidden"); loadSampleData(); initUIByRole(); } else { logout(); } } else { loadSampleData(); }
-  // Mobile sidebar
-  document.getElementById("mobileMenuBtn")?.addEventListener("click", () => { document.body.classList.toggle("sidebar-open"); document.getElementById("sidebarBackdrop")?.classList.toggle("hidden"); });
-  document.getElementById("sidebarBackdrop")?.addEventListener("click", () => { document.body.classList.remove("sidebar-open"); document.getElementById("sidebarBackdrop")?.classList.add("hidden"); });
-  function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
 </script>
+
 </body>
 </html>
